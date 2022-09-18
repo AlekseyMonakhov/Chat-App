@@ -1,5 +1,8 @@
 import React from "react";
+import { useState } from "react";
 import styled from "styled-components";
+import { collection, query, where, getDocs } from "firebase/firestore";
+import { db } from "../firebase";
 
 const SearchContainer = styled.div`
   border: 1px solid gray;
@@ -50,20 +53,47 @@ export const UserName = styled.span`
 `;
 
 const Search = () => {
+  const [userName, setUserName] = useState("");
+  const [user, setUser] = useState(null);
+  const [err, setErr] = useState(false);
+
+  const handleSearch = async () => {
+    const q = query(
+      collection(db, "users"),
+      where("displayName", "==", userName)
+    );
+    try {
+      const querySnapshot = await getDocs(q);
+      querySnapshot.forEach((doc) => {
+        setUser(doc.data());
+      });
+    } catch (err) {
+      setErr(true);
+    }
+  };
+  const handleKey = (e) => {
+    e.code === "Enter" && handleSearch();
+  };
+
   return (
     <SearchContainer>
       <SearchForm>
         <SearchInput
           placeholder='Find a user'
           type={"text"}
+          onChange={(e) => setUserName(e.target.value)}
+          onKeyDown={handleKey}
         />
       </SearchForm>
-      <Chat>
-        <UserImg src='https://images.unsplash.com/photo-1662695088711-acfdfda51c01?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=387&q=80' />
-        <UserInfo>
-          <UserName>Jane</UserName>
-        </UserInfo>
-      </Chat>
+      {err && <span>User not found ... </span>}
+      {user && (
+        <Chat>
+          <UserImg src={user.photoURL} />
+          <UserInfo>
+            <UserName>{user.displayName}</UserName>
+          </UserInfo>
+        </Chat>
+      )}
     </SearchContainer>
   );
 };

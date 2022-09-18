@@ -1,6 +1,9 @@
-import React from "react";
+import React, { useContext } from "react";
 import styled from "styled-components";
 import { mobile } from "../responsive";
+import { signOut } from "firebase/auth";
+import { auth } from "../firebase";
+import { AuthContext } from "../context/AuthContext";
 
 const NavbarContainer = styled.div`
   display: flex;
@@ -38,16 +41,17 @@ const Button = styled.button`
 `;
 
 const Navbar = () => {
+  const { currentUser } = useContext(AuthContext);
   return (
     <NavbarContainer>
       <Logo>Aleksey Chat</Logo>
       <User>
         <UserImg
-          src='https://images.unsplash.com/photo-1662695088711-acfdfda51c01?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=387&q=80'
+          src={currentUser.photoURL}
           alt='photo'
         />
-        <UserName>Name</UserName>
-        <Button>logout</Button>
+        <UserName>{currentUser.displayName}</UserName>
+        <Button onClick={() => signOut(auth)}>logout</Button>
       </User>
     </NavbarContainer>
   );

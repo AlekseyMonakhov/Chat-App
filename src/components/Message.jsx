@@ -45,7 +45,7 @@ const MessageDesc = styled.span``;
 
 const Message = () => {
   return (
-    <MessageContainer owner={true}>
+    <MessageContainer owner={false}>
       <MessageInfo>
         <Img
           src='https://images.unsplash.com/photo-1663343682877-94ca0839f383?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHw0Nnx8fGVufDB8fHx8&auto=format&fit=crop&w=500&q=60'

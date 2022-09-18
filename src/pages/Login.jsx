@@ -1,4 +1,8 @@
+import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import styled from "styled-components";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../firebase";
 
 const Container = styled.div`
   background-color: #a7bcff;
@@ -53,12 +57,25 @@ const DontHaveAcc = styled.p`
   padding: 10px;
 `;
 const Login = () => {
+  const [err, setErr] = useState(false);
+  const navigate = useNavigate();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const email = e.target[0].value;
+    const password = e.target[1].value;
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      navigate("/");
+    } catch (err) {
+      setErr(true);
+    }
+  };
   return (
     <Container>
       <FormWrapper>
         <FormTitle>Aleksey Chat</FormTitle>
         <FormRegister>Login</FormRegister>
-        <Form>
+        <Form onSubmit={handleSubmit}>
           <FormInput
             type={"email"}
             placeholder='email'
@@ -68,8 +85,21 @@ const Login = () => {
             placeholder='password'
           />
           <FormButton>Sign in</FormButton>
+          {err && <span>Something went wrong...</span>}
         </Form>
-        <DontHaveAcc>Dont have an account ? Register</DontHaveAcc>
+        <DontHaveAcc>
+          Dont have an account ?{" "}
+          <Link
+            style={{
+              color: "black",
+              textDecoration: "none",
+              fontWeight: "bold",
+            }}
+            to={"/register"}
+          >
+            Register
+          </Link>
+        </DontHaveAcc>
       </FormWrapper>
     </Container>
   );

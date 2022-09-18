@@ -1,5 +1,11 @@
 import styled from "styled-components";
 import Add from "../img/addAvatar.png";
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { auth, db, storage } from "../firebase";
+import { useState } from "react";
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { doc, setDoc } from "firebase/firestore";
+import { useNavigate, Link } from "react-router-dom";
 
 const Container = styled.div`
   background-color: #a7bcff;
@@ -62,23 +68,71 @@ const Label = styled.label`
   cursor: pointer;
 `;
 const Register = () => {
+  const [err, setErr] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const handleSubmit = async (e) => {
+    setLoading(true);
+    e.preventDefault();
+    const displayName = e.target[0].value;
+    const email = e.target[1].value;
+    const password = e.target[2].value;
+    const file = e.target[3].files[0];
+    try {
+      const res = await createUserWithEmailAndPassword(auth, email, password);
+
+      const date = new Date().getTime();
+      const storageRef = ref(storage, `${displayName + date}`);
+
+      await uploadBytesResumable(storageRef, file).then(() => {
+        getDownloadURL(storageRef).then(async (downloadURL) => {
+          try {
+            await updateProfile(res.user, {
+              displayName,
+              photoURL: downloadURL,
+            });
+            await setDoc(doc(db, "users", res.user.uid), {
+              uid: res.user.uid,
+              displayName,
+              email,
+              photoURL: downloadURL,
+            });
+
+            await setDoc(doc(db, "userChats", res.user.uid), {});
+            navigate("/");
+          } catch (err) {
+            setErr(true);
+            setLoading(false);
+          }
+        });
+      });
+    } catch (err) {
+      setErr(true);
+      setLoading(false);
+    }
+  };
+
   return (
     <Container>
       <FormWrapper>
         <FormTitle>Aleksey Chat</FormTitle>
         <FormRegister>REGISTER</FormRegister>
-        <Form>
+        <Form onSubmit={handleSubmit}>
           <FormInput
             type={"text"}
             placeholder='display name'
+            required
           />
           <FormInput
             type={"email"}
             placeholder='email'
+            required
           />
           <FormInput
             type={"password"}
             placeholder='password'
+            pattern='`^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,20}$`'
+            required
           />
           <Label htmlFor='file'>
             <img
@@ -94,8 +148,24 @@ const Register = () => {
             type={"file"}
           />
           <FormButton>Sign up</FormButton>
+          {loading && (
+            <span>Uploading and compressing the image please wait...</span>
+          )}
+          {err && <span>Something went wrong...</span>}
         </Form>
-        <DontHaveAcc>Dont have account ? Login</DontHaveAcc>
+        <DontHaveAcc>
+          Dont have account ?{" "}
+          <Link
+            style={{
+              color: "black",
+              textDecoration: "none",
+              fontWeight: "bold",
+            }}
+            to={"/login"}
+          >
+            Login
+          </Link>
+        </DontHaveAcc>
       </FormWrapper>
     </Container>
   );
