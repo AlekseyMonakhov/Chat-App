@@ -1,8 +1,19 @@
-import React from "react";
+import React, { useContext } from "react";
 import { useState } from "react";
 import styled from "styled-components";
-import { collection, query, where, getDocs } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  query,
+  where,
+  getDocs,
+  setDoc,
+  updateDoc,
+  serverTimestamp,
+  getDoc,
+} from "firebase/firestore";
 import { db } from "../firebase";
+import { AuthContext } from "../context/AuthContext";
 
 const SearchContainer = styled.div`
   border: 1px solid gray;
@@ -56,7 +67,7 @@ const Search = () => {
   const [userName, setUserName] = useState("");
   const [user, setUser] = useState(null);
   const [err, setErr] = useState(false);
-
+  const { currentUser } = useContext(AuthContext);
   const handleSearch = async () => {
     const q = query(
       collection(db, "users"),
@@ -74,6 +85,38 @@ const Search = () => {
   const handleKey = (e) => {
     e.code === "Enter" && handleSearch();
   };
+  const handleSelect = async () => {
+    const combinedId =
+      currentUser.uid > user.uid
+        ? currentUser.uid + user.uis
+        : user.uid + currentUser.uid;
+    try {
+      const res = await getDoc(doc(db, "chats", combinedId));
+      if (!res.exists()) {
+        await setDoc(doc(db, "chats", combinedId), { messages: [] });
+        await updateDoc(doc(db, "userChats", currentUser.uid), {
+          [combinedId + ".userInfo"]: {
+            uid: user.uid,
+            displayName: user.displayName,
+            photoURL: user.photoURL,
+          },
+          [combinedId + ".date"]: serverTimestamp(),
+        });
+
+        await updateDoc(doc(db, "userChats", user.uid), {
+          [combinedId + ".userInfo"]: {
+            uid: currentUser.uid,
+            displayName: currentUser.displayName,
+            photoURL: currentUser.photoURL,
+          },
+          [combinedId + ".date"]: serverTimestamp(),
+        });
+      }
+    } catch (err) { 
+      setUser(null);
+      setUserName("");
+    }
+  };
 
   return (
     <SearchContainer>
@@ -83,11 +126,12 @@ const Search = () => {
           type={"text"}
           onChange={(e) => setUserName(e.target.value)}
           onKeyDown={handleKey}
+          value={userName}
         />
       </SearchForm>
       {err && <span>User not found ... </span>}
       {user && (
-        <Chat>
+        <Chat onClick={handleSelect}>
           <UserImg src={user.photoURL} />
           <UserInfo>
             <UserName>{user.displayName}</UserName>

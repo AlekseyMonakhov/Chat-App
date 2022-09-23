@@ -131,7 +131,6 @@ const Register = () => {
           <FormInput
             type={"password"}
             placeholder='password'
-            pattern='`^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,20}$`'
             required
           />
           <Label htmlFor='file'>
