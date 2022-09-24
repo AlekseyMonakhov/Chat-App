@@ -49,20 +49,28 @@ const Message = ({ message }) => {
   const { currentUser } = useContext(AuthContext);
   const { data } = useContext(ChatContext);
   return (
-    <MessageContainer owner={message.senderId === currentUser.uid ? true : false}>
+    <MessageContainer
+      owner={message.senderId === currentUser.uid ? true : false}
+    >
       <MessageInfo>
         <Img
-          src={message.img}
+          src={
+            message.senderId === currentUser.uid
+              ? currentUser.photoURL
+              : data.user.photoURL
+          }
           alt='User Photo'
         />
         <MessageDesc>just now</MessageDesc>
       </MessageInfo>
       <MessageContent>
         <p>{message.text}</p>
-        <img
-          src={message.img}
-          alt='user foto'
-        />
+        {message.img && (
+          <img
+            src={message.img}
+            alt='user foto'
+          />
+        )}
       </MessageContent>
     </MessageContainer>
   );

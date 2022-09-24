@@ -28,8 +28,8 @@ const Chats = () => {
     };
     currentUser.uid && getChats();
   }, [currentUser.uid]);
-  const handleSelect = (user) => {
-    dispatch({type:"CHANGE_USER",payload: user})
+  const handleSelect = (u) => {
+    dispatch({type:"CHANGE_USER",payload: u})
   };
   return (
     <ChatsContainer>
