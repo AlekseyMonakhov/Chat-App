@@ -1,5 +1,7 @@
-import React from "react";
+import React, { useContext } from "react";
 import styled from "styled-components";
+import { AuthContext } from "../context/AuthContext";
+import { ChatContext } from "../context/ChatContext";
 
 const MessageContainer = styled.div`
   display: flex;
@@ -43,20 +45,22 @@ const Img = styled.img`
 `;
 const MessageDesc = styled.span``;
 
-const Message = () => {
+const Message = ({ message }) => {
+  const { currentUser } = useContext(AuthContext);
+  const { data } = useContext(ChatContext);
   return (
-    <MessageContainer owner={false}>
+    <MessageContainer owner={message.senderId === currentUser.uid ? true : false}>
       <MessageInfo>
         <Img
-          src='https://images.unsplash.com/photo-1663343682877-94ca0839f383?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHw0Nnx8fGVufDB8fHx8&auto=format&fit=crop&w=500&q=60'
+          src={message.img}
           alt='User Photo'
         />
         <MessageDesc>just now</MessageDesc>
       </MessageInfo>
       <MessageContent>
-        <p>Hello</p>
+        <p>{message.text}</p>
         <img
-          src='https://images.unsplash.com/photo-1663360641928-3dd68e3d7e7a?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=387&q=80'
+          src={message.img}
           alt='user foto'
         />
       </MessageContent>

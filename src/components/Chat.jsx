@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useContext } from "react";
 import styled from "styled-components";
 import Cam from "../img/cam.png";
 import Add from "../img/add.png";
 import More from "../img/more.png";
 import Messages from "./Messages";
 import Input from "./Input";
+import { ChatContext } from "../context/ChatContext";
 const ChatContainer = styled.div`
   flex: 2;
 `;
@@ -28,10 +29,11 @@ const ChatImg = styled.img`
 `;
 
 const Chat = () => {
+  const {data} = useContext(ChatContext);
   return (
     <ChatContainer>
       <ChatInfo>
-        <UserName>Jane</UserName>
+        <UserName>{data.user?.displayName}</UserName>
         <ChatIcons>
           <ChatImg
             src={Cam}
